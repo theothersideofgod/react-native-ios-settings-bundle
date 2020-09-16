@@ -3,6 +3,10 @@
 #import <React/RCTLog.h>
 
 @implementation RNIosSettingsBundle
+{
+  bool hasListeners;
+}
+
 
 - (dispatch_queue_t)methodQueue
 {
@@ -10,15 +14,49 @@
 }
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_METHOD(getValByKey:(NSString *)key  callback:(RCTResponseSenderBlock)callback)
-{
-
+RCT_EXPORT_METHOD(setBoolForKey:(BOOL)value key:(NSString *)key callback:(RCTResponseSenderBlock)callback) {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+     [defaults setBool:value forKey:key];
+    callback(@[[NSNull null], @"success"]);
+}
 
-    if([defaults objectForKey:key] == nil)
-        callback(@[ @[ @true ,@"value is empty or the key is not defined"] , [NSNull null]]);
-    else
-         callback(@[[NSNull null], [defaults objectForKey:key]]);
+RCT_EXPORT_METHOD(boolForKey:(NSString *)key callback:(RCTResponseSenderBlock)callback) {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    bool response = [defaults boolForKey:key];
+    callback(@[[NSNull null], [NSNumber numberWithBool:response]]);
+}
+
+- (NSArray<NSString *> *)supportedEvents
+{
+  return @[@"settingsChanged"];
+}
+// Will be called when this module's first listener is added.
+-(void)startObserving {
+    hasListeners = YES;
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+       [center addObserver:self
+                  selector:@selector(defaultsChanged:)
+                      name:NSUserDefaultsDidChangeNotification
+                    object:nil];
+    // Set up any upstream listeners or background tasks as necessary
+}
+
+// Will be called when this module's last listener is removed, or on dealloc.
+-(void)stopObserving {
+    hasListeners = NO;
+    // Remove upstream listeners, stop unnecessary background tasks
+}
+
+- (void)defaultsChanged:(NSNotification *)notification
+{
+   // Get the user defaults
+     NSUserDefaults *defaults = (NSUserDefaults *)[notification object];
+
+     // Do something with it
+     NSLog(@"%@", [defaults objectForKey:@"nameOfThingIAmInterestedIn"]);
+  if (hasListeners) { // Only send events if anyone is listening
+      [self sendEventWithName:@"settingsChanged" body:[defaults dictionaryRepresentation]];
+  }
 }
 
 @end

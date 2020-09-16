@@ -1,14 +1,20 @@
-
-import { NativeModules,Platform } from 'react-native';
+import { NativeModules, Platform, NativeEventEmitter } from "react-native";
 
 const { RNIosSettingsBundle } = NativeModules;
 
-export default {
-    get: (key,callback) =>
-    {
-          if(Platform == 'android')
-            return callback([1,'it works only on ios!']);
+export const RNIosSettingsBundleEventEmitter = new NativeEventEmitter(
+  RNIosSettingsBundle
+);
 
-        RNIosSettingsBundle.getValByKey(key,callback);
-    }
+export default {
+  setBoolForKey: (key, value, callback) => {
+    if (Platform == "android") return callback([1, "it works only on ios!"]);
+
+    RNIosSettingsBundle.setBoolForKey(value, key, callback);
+  },
+  boolForKey: (key, callback) => {
+    if (Platform == "android") return callback([1, "it works only on ios!"]);
+
+    RNIosSettingsBundle.boolForKey(key, callback);
+  },
 };
