@@ -52,8 +52,6 @@ RCT_EXPORT_METHOD(boolForKey:(NSString *)key callback:(RCTResponseSenderBlock)ca
    // Get the user defaults
      NSUserDefaults *defaults = (NSUserDefaults *)[notification object];
 
-     // Do something with it
-     NSLog(@"%@", [defaults objectForKey:@"nameOfThingIAmInterestedIn"]);
   if (hasListeners) { // Only send events if anyone is listening
       [self sendEventWithName:@"settingsChanged" body:[defaults dictionaryRepresentation]];
   }
